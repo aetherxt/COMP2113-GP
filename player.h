@@ -10,5 +10,7 @@ struct Player {
 };
 
 void initPlayer(Player &p);
+bool loadPlayer(Player& p, const std::string& filename);
+bool savePlayer(const Player& p, const std::string& filename);
 
 #endif

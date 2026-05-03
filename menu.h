@@ -2,9 +2,9 @@
 #define MENU_H
 #include "player.h"
 
-void displayMainMenu(const Player &p);
+void displayMainMenu(const Player& p);
 int getMenuChoice();
-void playGame(Player &p);
-void upgradeShop(Player &p);
+void playGame(Player& p);
+void upgradeShop(Player& p);
 
 #endif

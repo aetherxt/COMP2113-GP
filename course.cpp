@@ -27,7 +27,7 @@ Course generateCourse(int par) {
     const int roughLayer = 2;
     const int treeLayer = 2;
     const int centerX = c.width / 2;
-    const int maxDrift = 13;
+    const int maxDrift = 30;
 
     // fairway random generation
     vector<int> centerPath(c.height);

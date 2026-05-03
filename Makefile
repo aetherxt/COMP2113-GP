@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -pedantic-errors -std=c++11 -Wall
 TARGET = game
 
-OBJECTS = main.o menu.o player.o course.o
+OBJECTS = main.o menu.o player.o course.o game.o
 
 all: $(TARGET)
 
@@ -20,6 +20,9 @@ player.o: player.cpp player.h
 
 course.o: course.cpp course.h
 	$(CXX) $(CXXFLAGS) -c course.cpp
+
+game.o: game.cpp game.h course.h player.h
+	$(CXX) $(CXXFLAGS) -c game.cpp
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

@@ -14,6 +14,7 @@
 #define GREEN_COLOR "\033[32m"
 #define TREE_COLOR "\033[38;5;22m"
 #define SAND_COLOR "\033[33m"
+#define WATER_COLOR "\033[34m"
 #define BLUE "\033[36m"
 #define RESET "\033[0m"
 
@@ -142,6 +143,8 @@ void displayWithLandingZone(const Course& course, const LandingZone& lz, int str
                 cout << TREE_COLOR << ch << RESET;
             } else if (ch == 'S') {
                 cout << SAND_COLOR << ch << RESET;
+            } else if (ch == '~') {
+                cout << WATER_COLOR << ch << RESET;
             } else if (isOnGreen(row, col, course)) {
                 cout << GREEN_COLOR << ch << RESET;
             } else if (ch == '/' || ch == '\\' || ch == '|' || ch == '_') {
@@ -159,7 +162,8 @@ void displayWithLandingZone(const Course& course, const LandingZone& lz, int str
     cout << endl;
     cout << "  Legend: " << GREEN_COLOR << "." << RESET << " Fairway/Green   "
          << BLUE << "H" << RESET << " Hole     " << BLUE << "T" << RESET << " Tee" << endl;
-    cout << "          # Rough           " << TREE_COLOR << "^" << RESET << " Tree     " << SAND_COLOR << "S" << RESET << " Sand" << endl;
+    cout << "          # Rough           " << TREE_COLOR << "^" << RESET << " Tree     " << SAND_COLOR << "S" << RESET << " Sand"
+         << "     " << WATER_COLOR << "~" << RESET << " Water" << endl;
     cout << "          " << RED << "- | / \\" << RESET << " Landing Zone   "
          << BLUE << "O" << RESET << " Ball" << endl;
     cout << endl;

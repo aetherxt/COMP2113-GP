@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <set>
 
 #include "shot.h"
 
@@ -30,6 +31,8 @@ static int getMaxStrengthForTerrain(char terrain) {
             return 60;
         case 'S':  // Sand
             return 30;
+        case '~':  // Water
+            return 40;
         default:
             return 100;
     }
@@ -159,6 +162,12 @@ void playRound(Player& p) {
                     landing = findClosestValidPosition(course, landing.row, landing.col);
                 }
 
+                // Check if ball landed in water hazard
+                if (course.waterHazards.count(std::make_pair(landing.row, landing.col)) > 0) {
+                    cout << "Ball landed in water. 2 stroke penalty." << endl;
+                    shots += 2;
+                }
+
                 ballRow = landing.row;
                 ballCol = landing.col;
 
@@ -181,7 +190,9 @@ void playRound(Player& p) {
                     } else {
                         // Print terrain
                         char terrain = course.map[ballRow][ballCol];
-                        if (terrain == '.') {
+                        if (terrain == '~') {
+                            cout << "  Ball landed in water." << endl;
+                        } else if (terrain == '.') {
                             cout << "  Ball landed on the fairway." << endl;
                         } else if (terrain == '#') {
                             cout << "  Ball landed in the rough." << endl;

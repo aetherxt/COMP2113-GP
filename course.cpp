@@ -14,6 +14,7 @@
 #define GREEN_COLOR "\033[32m"
 #define TREE_COLOR "\033[38;5;22m"
 #define SAND_COLOR "\033[33m"
+#define WATER_COLOR "\033[34m"
 #define BLUE "\033[36m"
 #define RESET "\033[0m"
 
@@ -24,6 +25,13 @@ static bool isOnGreen(int row, int col, int greenCenterY, int greenCenterX, int 
     double dxg = (double)(col - greenCenterX) / greenRX;
     double dyg = (double)(row - greenCenterY) / greenRY;
     return sqrt(dxg * dxg + dyg * dyg) <= 1.0;
+}
+
+// Calculate fairway half-width based on row with smooth variation
+static int getFairwayHalfWidth(int row, int courseHeight) {
+    double t = (double)row / courseHeight;
+    double halfWidth = 4.25 + 1.75 * sin(t * M_PI * 1.5);  // Use sine wave to model variation in width
+    return (int)round(halfWidth);
 }
 
 // Generate a random course based on the selected par
@@ -38,7 +46,6 @@ Course generateCourse(int par) {
 
     c.map.resize(c.height, vector<char>(c.width, ' '));
 
-    const int fairwayHalfWidth = 4;
     const int roughLayer = 2;
     const int treeLayer = 2;
     const int centerX = c.width / 2;
@@ -48,14 +55,18 @@ Course generateCourse(int par) {
     centerPath[c.height - 1] = centerX;
 
     int dogLegDir = (rand() % 2 == 0) ? 1 : -1;
+    int dogLegMultiplier = 2 + rand() % 2;  // 2 or 3 for max angle
+    int dogLegShift = 0;
+    int midStart = c.height * 2 / 3;
+    int midEnd = c.height / 3;
+    bool hasDogLeg = (rand() % 100 < 50); // 50% chance to have a dog leg
 
     // Generate fairway with possible dogleg
     for (int row = c.height - 2; row >= 0; row--) {
         int drift;
-        int midStart = c.height * 2 / 3;
-        int midEnd = c.height / 3;
-        if (row < midStart && row >= midEnd) {
-            drift = dogLegDir;
+        if (hasDogLeg && row < midStart && row >= midEnd) {
+            drift = dogLegDir * dogLegMultiplier;
+            dogLegShift += abs(drift);
         } else {
             drift = (rand() % 3) - 1;
         }
@@ -67,12 +78,17 @@ Course generateCourse(int par) {
         if (centerPath[row] > centerX + maxDrift)
             centerPath[row] = centerX + maxDrift;
 
-        int margin = fairwayHalfWidth + roughLayer + treeLayer + 1;
+        int margin = getFairwayHalfWidth(row, c.height) + roughLayer + treeLayer + 1;
         if (centerPath[row] < margin)
             centerPath[row] = margin;
         if (centerPath[row] >= c.width - margin)
             centerPath[row] = c.width - margin - 1;
     }
+
+    // Calculate dog leg angle
+    int dogLegVertical = midStart - midEnd;
+    double dogLegAngle = atan((double)dogLegShift / dogLegVertical) * 180.0 / M_PI;
+    bool hasWaterHazard = (dogLegAngle > 30.0);
 
     const int greenCenterY = 3;
     const int greenCenterX = centerPath[greenCenterY];
@@ -86,6 +102,7 @@ Course generateCourse(int par) {
 
     // Fill in terrain
     for (int row = 0; row < c.height; row++) {
+        int fairwayHalfWidth = getFairwayHalfWidth(row, c.height);
         for (int col = 0; col < c.width; col++) {
             int distFairway = INT_MAX;
             if (row >= greenCenterY) {
@@ -173,6 +190,43 @@ Course generateCourse(int par) {
         }
     }
 
+    // Add water hazards if dog leg angle is above 30 degrees
+    if (hasWaterHazard) {
+        int waterRow = (midStart + midEnd) / 2;
+        // Place water on the inside of the dog leg
+        int waterCol = centerPath[waterRow] - (dogLegDir > 0 ? 6 : -6);
+
+        // Add water hazard
+        for (int dr = -2; dr <= 2; dr++) {
+            for (int dc = -2; dc <= 2; dc++) {
+                int r = waterRow + dr;
+                int col = waterCol + dc;
+                if (r >= 0 && r < c.height && col >= 0 && col < c.width) {
+                    char curr = c.map[r][col];
+                    if (curr != 'H' && curr != 'T' && curr != '.') {
+                        c.map[r][col] = '~';
+                        c.waterHazards.insert(std::make_pair(r, col));
+                    }
+                }
+            }
+        }
+
+        // Add trees around water
+        for (int dr = -3; dr <= 3; dr++) {
+            for (int dc = -3; dc <= 3; dc++) {
+                if (dr >= -2 && dr <= 2 && dc >= -2 && dc <= 2) continue;  // Skip water area
+                int r = waterRow + dr;
+                int col = waterCol + dc;
+                if (r >= 0 && r < c.height && col >= 0 && col < c.width) {
+                    char curr = c.map[r][col];
+                    if (curr == ' ' || curr == '#') {
+                        c.map[r][col] = '^';
+                    }
+                }
+            }
+        }
+    }
+
     // Add rough around sand traps
     for (int row = 0; row < c.height; row++) {
         for (int col = 0; col < c.width; col++) {
@@ -214,7 +268,7 @@ Course generateCourse(int par) {
 
     int teeY = c.height - 1;
     int teeX = centerPath[teeY];
-    c.map[teeY][teeX] = 'T'; // Place tee
+    c.map[teeY][teeX] = 'T';  // Place tee
 
     return c;
 }
@@ -237,6 +291,8 @@ void displayCourse(const Course& c) {
                 cout << TREE_COLOR << ch << RESET;
             } else if (ch == 'S') {
                 cout << SAND_COLOR << ch << RESET;
+            } else if (ch == '~') {
+                cout << WATER_COLOR << ch << RESET;
             } else if (isOnGreen(row, col, c.holeRow, c.holeCol, c.greenRX, c.greenRY)) {
                 cout << GREEN_COLOR << ch << RESET;
             } else if (ch == '/' || ch == '\\' || ch == '|' || ch == '_') {
@@ -254,6 +310,7 @@ void displayCourse(const Course& c) {
     cout << endl;
     cout << "  Legend: " << GREEN_COLOR << "." << RESET << " Fairway/Green   "
          << BLUE << "H" << RESET << " Hole     " << BLUE << "T" << RESET << " Tee" << endl;
-    cout << "          # Rough           " << TREE_COLOR << "^" << RESET << " Tree     " << SAND_COLOR << "S" << RESET << " Sand" << endl;
+    cout << "          # Rough           " << TREE_COLOR << "^" << RESET << " Tree     " << SAND_COLOR << "S" << RESET << " Sand"
+         << "     " << WATER_COLOR << "~" << RESET << " Water" << endl;
     cout << endl;
 }

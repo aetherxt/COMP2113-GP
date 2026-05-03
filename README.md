@@ -8,6 +8,11 @@
 
 ---
 
+## Game Demo
+
+Game demo video:
+https://drive.google.com/file/d/1pv4mCR4ja-QFqwFt3COMYE0vK-Aku0kr/view?usp=sharing
+
 ## Game Description
 
 **TUI GOLF** is a hardcore, terminal-based golf simulation game. Set entirely within the console, players experience procedurally generated golf courses with highly variable terrains. The game simulates a physics-based landing zone where players must strategically adjust their shot strength and direction, taking into account terrain penalties such as roughs, trees, sand traps, and water hazards.

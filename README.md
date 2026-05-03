@@ -1,6 +1,10 @@
 # COMP2113 Group Project —— Group 111
-
 ## TUI Golf: Terminal Golf Simulator
+![](https://img.shields.io/badge/Language-C%2B%2B11-blue.svg) ![](https://img.shields.io/badge/Platform-Linux%20%2F%20macOS-lightgrey.svg)
+
+> "Golf is a good walk spoiled." — Mark Twain
+> 
+> Welcome to the ultimate Terminal User Interface (TUI) Golf experience.
 
 ## Team Members
 
@@ -11,36 +15,39 @@
 
 ## Game Description
 
-**TUI GOLF** is a text-based, strategic golf simulator with an upgrade system. The player is encouraged to make strategic decisions on shot strength and direction while navigating randomly generated courses. The player is rewarded with coins based on their performance, which can be used to permanently upgrade their stats in a shop.
+**TUI GOLF** is a hardcore, terminal-based golf simulation game. Set entirely within the console, players experience procedurally generated golf courses with highly variable terrains. The game simulates a physics-based landing zone where players must strategically adjust their shot strength and direction, taking into account terrain penalties such as roughs, trees, sand traps, and water hazards.
 
-Players start with a base strength and accuracy. In each round, they select a course difficulty (Par 3, Par 4, or Par 5) which randomly generates a course based on the selected par. By inputting their desired **Strength (1-100)** and **Direction angle (-180° to 180°)**, the game renders the "Landing Zone" on the map. The player can then choose to readjust their shot or take it. When the player gets the ball on the green, they will complete the hole and be awarded with coins based on how many shots under the course par they achieved.Players must navigate around procedurally generated Sand Traps (`S`), Trees (`^`), Roughs (`#`), and Water Hazards (`~`).
+By challenging different holes (Par 3, Par 4, Par 5), players can earn coins based on their performance (e.g., scoring an Eagle or a Birdie). These coins can then be spent in the Shop to permanently upgrade the player's attributes (Strength and Accuracy), creating an engaging progression system.
 
 ---
 
-## Compilation and Execution (Quick Start)
+## Game Rules
 
-A `Makefile` is provided in the root directory for standard compilation.
+1. **Goal:** Sink the ball (O) into the hole (H) using the fewest possible strokes.
 
-**1. Compile the Game**
-Open your terminal in the project directory and run the following command:
+2. **Terrain Penalties:** Different terrains strictly limit your maximum shot strength:
 
-```bash
-make
-```
+**Fairway/Green (.):** Max Strength 100
 
-**2. Start the Game**
-Once the compilation is successful, start the golf simulator by running:
+**Rough (#):** Max Strength 80
 
-```bash
-./game
-```
+**Tree (^):** Max Strength 60
 
-**3. Clean up**
-When you are finished playing, you can easily remove all compiled object files (.o) and the executable binary to keep your directory clean by running:
+**Sand (S):** Max Strength 30
 
-```bash
-make clean
-```
+**Water (~):** Sinking into water incurs a 2-stroke penalty.
+
+**Out of Bounds (OOB):** Hitting the ball out of the map incurs a 1-stroke penalty, and the ball is reset to the closest valid terrain.
+
+3. Economy: Finishing a hole below or at Par rewards you with coins equal to the stroke difference.
+
+---
+
+## Additional strategic elements:
+
+- The landing zone increases in size with shot strength, making the probability that the shot lands in the fairway lower, creating a risk-reward dynamic.
+- Sand traps (`S`) are placed around the green, and landing in them reduces the  strength you can use on your next shot.
+- Water hazards (`~`) are placed on the inside of dog-legs; landing in water incurs a 2-stroke penalty.
 
 ---
 
@@ -61,43 +68,30 @@ make clean
 2. Choose to upgrade either (1) Strength or (2) Accuracy for 2 coins per upgrade.
 3. (0) To return to the main menu.
 
-## Game Features & Code Requirements
+---
 
-Here is a list of our implemented features and how the **6 core coding requirements** seamlessly support them:
+## Game Features & Code Requirements Explanation
 
-1. **Procedural Course Generation (Generation of random events)**
+**1. Procedural Course Generation & Physics (Generation of random events)**
+Every hole generates a unique layout. In `course.cpp`, we utilize `<cstdlib>` (`srand` and `rand()`) to procedurally generate the terrain. The fairway varies smoothly in width using a sinusoidal model, and includes occasional dog-legs. Furthermore, the game features stochastic ball landing: the `generateBallLanding()` function calculates an elliptical "Landing Zone" based on your strength and accuracy, and randomly drops the ball within that geometry to simulate real-life uncontrollable factors.
 
-   Every hole generates a unique layout. In `course.cpp`, we utilize `<cstdlib>` (`srand` and `rand()`) to procedurally generate the terrain. The fairway now varies smoothly in width between 5 and 12 characters wide using a sinusoidal model, and the centerline will include occasional dog-legs (bends in the course). Hazards such as sand traps (`S`) are placed randomly near the green, roughs (`#`) and trees (`^`) are placed along the edge of the fairway, and water hazards (`~`) are placed on the inside of dog-legs to increase challenge.
+**2. Shop System & Map Data (Data structures for storing data)**
+Players can earn coins to permanently increase their stats. We use `struct` to package these complex states: The `Player` struct stores `coins`, `strength`, and `accuracy`. Similarly, the `Course` struct encapsulates the map dimensions and uses a `std::set<std::pair<int, int>>` to store water hazards, allowing for fast, optimized penalty detection.
 
-2. **Shop System and Course Generation (Data structures for storing data)**
+**3. Adaptive Map Sizing (Dynamic memory management)**
+The game grid is implemented using dynamic arrays via the `<vector>` library in the STL. When `generateCourse()` is called, the 2D map dynamically resizes itself (`c.map.resize()`) based on the required dimensions for different Pars. This ensures memory is efficiently allocated and prevents memory leaks without needing manual `new` or `delete` management. 
 
-   Players can earn coins to permanently increase their stats. We use `struct` to package these states: `Player` Struct (in `player.h`) stores `coins`, `strength`, and `accuracy`. Similarly, the `Course` Struct (in `course.h`) packages the map data.
+**4. Persistent Player Stats (File input/output)**
+In `player.cpp`, we use `<fstream>` (`ifstream` and `ofstream`) to interact with a local file named `player.txt`. It serializes and saves the player's attributes and coin balance when the game ends or a purchase is made, and loads them when the game starts up again to ensure no loss of progress.
 
-3. **Adaptive Map Sizing (Dynamic memory management)**
+**5. Modular Game Design (Program codes in multiple files)**
+The project is decoupled into specialized files for high maintainability: `main.cpp` drives the logic, `menu.cpp` handles the TUI and shop, `game.cpp` manages the gameplay loop, `course.cpp` handles procedural generation and ANSI color rendering, `shot.cpp` calculates landing zone physics, and `player.cpp` manages file I/O.
 
-   The game grid is implemented using dynamic arrays via the `<vector>` library. When `generateCourse()` is called, the map dynamically resizes itself (`c.map.resize()`) based on the required dimensions for different Pars. The TUI renders a colored map and a landing-zone preview overlay before each shot; terrain and hazards are color-coded (including water in blue) for clarity.
-
-4. **Persistent Player Stats (File input/output)**
-
-   In `player.cpp`, we use `<fstream>` (`ifstream` and `ofstream`) to interact with a local file named `player.txt`. It saves the player's stats when the game ends and loads them when the game starts up again.
-
-5. **Modular Game Design (Program codes in multiple files)**
-
-   The project is split across specialized files for maintainability: `menu.cpp` handles the menu, `game.cpp` and `shot.cpp` handle the main gameplay loop and landing-zone rendering, `course.cpp` generates the course, and `player.cpp` manages player data and saves.
-
-6. **Game Difficulty (Multiple Difficulty Levels)**
-
-   Before every round, the player chooses the difficulty of the generated course by selecting a par value:
-
-- **Par 3:** Shortest and easiest course
-- **Par 4:** Medium length and balanced difficulty.
-- **Par 5:** The longest and most challenging course, requiring multiple calculated shots to reach the green.
-
-Additional strategic elements:
-
-- The landing zone increases in size with shot strength, making the probability that the shot lands in the fairway lower, creating a risk-reward dynamic.
-- Sand traps (`S`) are placed around the green, and landing in them reduces the  strength you can use on your next shot.
-- Water hazards (`~`) are placed on the inside of dog-legs; landing in water incurs a 2-stroke penalty.
+**6. Game Difficulty (Multiple Difficulty Levels)**
+Before every round, the player chooses the difficulty of the generated course by selecting a par value:
+* **Par 3**: Shortest and easiest course.
+* **Par 4**: Medium length and balanced difficulty.
+* **Par 5**: The longest and most challenging course, requiring multiple calculated shots and avoiding numerous hazards to reach the green.
 
 ---
 

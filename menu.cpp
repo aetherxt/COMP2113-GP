@@ -1,7 +1,6 @@
 #include "menu.h"
 
 #include <iostream>
-#include <limits>
 
 #include "game.h"
 
@@ -23,11 +22,11 @@ int getMenuChoice() {
     int choice;
     while (!(cin >> choice)) {
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(10000, '\n');
         cout << "Invalid input. Please enter a number: ";
     }
 
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.ignore(10000, '\n');
     return choice;
 }
 

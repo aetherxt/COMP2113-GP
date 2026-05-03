@@ -4,7 +4,7 @@ using namespace std;
 
 void initPlayer(Player &p) {
     // default player stats
-    p.coins = 0;
+    p.coins = 4;
     p.strength = 100;
     p.accuracy = 1;
 }

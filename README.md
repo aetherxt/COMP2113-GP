@@ -59,7 +59,7 @@ make clean
 
 1. View your current stats and coins.
 2. Choose to upgrade either (1) Strength or (2) Accuracy for 2 coins per upgrade.
-3. (0) tTo return to the main menu.
+3. (0) To return to the main menu.
 
 ## Game Features & Code Requirements
 

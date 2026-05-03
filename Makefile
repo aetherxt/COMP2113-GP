@@ -1,8 +1,8 @@
-cxx = g++
-flags = -pedantic-errors -std=c++11 -Wall
-target = game
+CXX = g++
+CXXFLAGS = -pedantic-errors -std=c++11 -Wall
+TARGET = game
 
-OBJECTS  = main.o menu.o player.o
+OBJECTS = main.o menu.o player.o course.o
 
 all: $(TARGET)
 
@@ -17,6 +17,9 @@ menu.o: menu.cpp menu.h player.h
 
 player.o: player.cpp player.h
 	$(CXX) $(CXXFLAGS) -c player.cpp
+
+course.o: course.cpp course.h
+	$(CXX) $(CXXFLAGS) -c course.cpp
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

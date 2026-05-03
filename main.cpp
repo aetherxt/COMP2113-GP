@@ -8,7 +8,7 @@ using namespace std;
 const string SAVE_FILE = "player.txt";
 int main() {
     Player player;
-
+    // initialize player data
     if (!loadPlayer(player, SAVE_FILE)) {
         initPlayer(player);
         savePlayer(player, SAVE_FILE);
@@ -17,6 +17,7 @@ int main() {
     int choice = -1;
 
     while (choice != 0) {
+        // main menu logic
         displayMainMenu(player);
         choice = getMenuChoice();
 

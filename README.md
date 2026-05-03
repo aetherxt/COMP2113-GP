@@ -1,6 +1,4 @@
-# COMP2113 Group Project
-
-Group 111
+# COMP2113 Group Project——Group 111
 ![](https://img.shields.io/badge/Language-C%2B%2B11-blue.svg) ![](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS-lightgrey.svg)
 
 	  _______  _     _  ___      _______  _______  ___      _______ 
@@ -15,9 +13,11 @@ Group 111
 >
 > — Arnold Palmer
 
+---
+
 ## Team Members
 * **YANG Chengxi** (UID: 3036667206)
-* **Law Marcus** (UID: )
+* **Law Marcus** (UID:  )
 
 ---
 
@@ -28,41 +28,56 @@ Players start with base strength and accuracy. In each round, they select a cour
 
 ---
 
-## Game Features
-1. **RPG Progression & Shop System:** Earn coins (planned) and spend them in the Main Menu shop to permanently upgrade your golfer's `Strength` (+10) and `Accuracy` (+2).
-2. **Procedural Course Generation:** Every hole played generates a unique layout with randomized doglegs (fairway curves), sand traps, and tree lines.
-3. **Trigonometric Landing Predictor:** The game calculates the exact landing ellipse based on the player's effective power and angular direction, rendering a visual red indicator (`/ \ | -`) on the terminal map.
-4. **Persistent Save Data:** Your coins, strength, and accuracy are automatically saved to your local drive and loaded the next time you boot the game.
+## Game Features & Code Requirements
+Here is a list of our implemented features and how the **6 core coding requirements** seamlessly support them:
+
+1. **Procedural Course Generation (Supported by *Generation of random events*)** 
+   Every hole generates a unique layout. In `course.cpp`, we utilize `<cstdlib>` (`srand` and `rand()`) to procedurally generate the terrain. The fairway's direction drifts randomly, and hazards like sand traps (`S`) and trees (`^`) naturally spawn based on randomized placement logic, ensuring infinite replayability.
+
+2. **RPG Progression & Shop System (Supported by *Data structures for storing data*)** 
+   Players earn coins to permanently upgrade their golfer. We use `struct` to neatly package these states: `Player` Struct (in `player.h`) stores `coins`, `strength`, and `accuracy`. Similarly, the `Course` Struct (in `course.h`) packages the map data.
+
+3. **Adaptive UI and Map Sizing (Supported by *Dynamic memory management*)** 
+   The game grid is implemented using dynamic arrays via the C++ Standard Template Library (`std::vector`). When `generateCourse()` is called, the map dynamically resizes itself (`c.map.resize()`) based on the required dimensions for different Pars, managing heap memory automatically and preventing memory leaks.
+
+4. **Persistent Save Data (Supported by *File input/output*)**
+   Your progression is never lost. In `player.cpp`, we use `<fstream>` (`ifstream` and `ofstream`) to interact with a local file named `player.txt`. It saves the player's stats seamlessly and restores them the next time the game boots up.
+
+5. **Modular Architecture (Supported by *Program codes in multiple files*)** 
+   The project is strictly modularized for better maintainability. Operations are divided into specialized files: `menu.cpp` (UI logic), `game.cpp` (physics & rendering), `course.cpp` (generation algorithms), and `player.cpp` (I/O).
+
+6. **Strategic Depth (Supported by *Multiple Difficulty Levels*)** 
+   Our game incorporates a built-in difficulty selector tied to the theme of Golf. Before every round, the player chooses:
+   * **Par 3:** The shortest and easiest course.
+   * **Par 4:** Medium length and balanced difficulty.
+   * **Par 5:** The longest and most challenging course, requiring multiple highly calculated shots to reach the green.
 
 ---
 
-## Coding Requirements Explanation
-Here is how our codebase fulfills the 6 core coding elements required by the course:
+## Non-Standard Libraries
+**No non-standard 3rd-party libraries were used in this project.** The game is built entirely using standard C/C++11 libraries to ensure maximum compatibility across all operating systems.
 
-1. **Generation of random events**
-The course map is never static. In `course.cpp`, we utilize `<cstdlib>` (`srand` and `rand()`) to procedurally generate the terrain. The fairway's direction drifts randomly, and hazards like sand traps (`S`) and trees (`^`) naturally spawn based on randomized placement logic.
+However, our core "Landing Predictor" feature heavily relies on the standard `<cmath>` library. We utilized trigonometric functions (`sin()`, `cos()`, `round()`) alongside `M_PI` in `game.cpp` to accurately convert the player's angular direction and strength input into 2D Cartesian coordinates (X, Y), allowing us to precisely plot the ball's landing zone on the terminal grid.
 
-2. **Data structures for storing data**
-We use `struct` to neatly package game and player states:
-* `Player` Struct (in `player.h`): Stores `coins`, `strength`, and `accuracy`.
-* `Course` Struct (in `course.h`): Stores `par`, `width`, `height`, and the 2D map vector.
+---
 
-3. **Dynamic memory management**
-The game grid is implemented using dynamic arrays via the C++ Standard Template Library (`std::vector`). When `generateCourse()` is called, the map dynamically resizes itself (`c.map.resize()`) based on the required dimensions, managing heap memory automatically and preventing memory leaks.
+## Compilation and Execution (Quick Start)
+A `Makefile` is provided in the root directory for standard compilation.
 
-4. **File input/output (Loading/Saving data)**
-Game states are persistent. In `player.cpp`, we use `<fstream>` (`ifstream` and `ofstream`) to interact with a local file named `player.txt`. It saves the player's progression and seamlessly restores it the next time the game boots up.
+**1. Compile the Game**
+Open your terminal in the project directory and run the following command:
+```bash
+make
+```
 
-5. **Program codes in multiple files**
-The project architecture is strictly modularized for better maintainability:
-* `main.cpp`: Driver code.
-* `menu.cpp / .h`: Terminal UI and Shop logic.
-* `game.cpp / .h`: User input parsing, physics calculations, and rendering.
-* `course.cpp / .h`: Terrain generation algorithms.
-* `player.cpp / .h`: Data structures and File I/O.
+**2. Start the Game**
+Once the compilation is successful, start the golf simulator by running:
+```bash
+./game
+```
 
-6. **Multiple Difficulty Levels**
-Our game incorporates a built-in difficulty selector tied seamlessly into the theme of Golf. Before every round, the player is prompted to select their preferred level of challenge:
-* **Par 3:** The shortest and easiest course.
-* **Par 4:** Medium length and balanced difficulty.
-* **Par 5:** The longest and most challenging course, requiring multiple highly calculated shots to reach the green.
+**3. Clean up**
+When you are finished playing, you can easily remove all compiled object files (.o) and the executable binary to keep your directory clean by running:
+```bash
+make clean
+```
